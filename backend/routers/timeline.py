@@ -18,39 +18,49 @@ async def get_timeline(
 ):
     events: List[TimelineEvent] = []
 
-    # 作家生卒
-    authors = (await db.execute(
-        select(Author).where(Author.birth >= from_year, Author.birth <= to_year)
-    )).scalars().all()
-    for a in authors:
-        events.append(TimelineEvent(
-            year=a.birth, type="birth",
-            label=f"{a.name_zh} 出生", author_id=a.id, author_name_zh=a.name_zh,
-        ))
+    # 预建 author_id → name_zh 映射，供下方各类事件使用
+    all_authors = (await db.execute(select(Author))).scalars().all()
+    author_name: dict[int, str] = {a.id: a.name_zh for a in all_authors}
+
+    # 作家生卒（仅显示出生年在范围内的；逝世年也在范围内则一并显示）
+    for a in all_authors:
+        if from_year <= a.birth <= to_year:
+            events.append(TimelineEvent(
+                year=a.birth, type="birth",
+                label=f"{a.name_zh} 出生",
+                author_id=a.id, author_name_zh=a.name_zh,
+            ))
         if a.death and from_year <= a.death <= to_year:
             events.append(TimelineEvent(
                 year=a.death, type="death",
-                label=f"{a.name_zh} 逝世", author_id=a.id, author_name_zh=a.name_zh,
+                label=f"{a.name_zh} 逝世",
+                author_id=a.id, author_name_zh=a.name_zh,
             ))
 
-    # 作品
+    # 作品（携带作家姓名）
     works = (await db.execute(
         select(Work).where(Work.year >= from_year, Work.year <= to_year)
     )).scalars().all()
     for w in works:
         events.append(TimelineEvent(
             year=w.year, type="work",
-            label=f"《{w.title_zh}》出版", author_id=w.author_id, event_id=w.id,
+            label=f"《{w.title_zh}》出版",
+            author_id=w.author_id,
+            author_name_zh=author_name.get(w.author_id),
+            event_id=w.id,
         ))
 
-    # 作家生平事件
+    # 作家生平事件（携带作家姓名）
     aevents = (await db.execute(
         select(AuthorEvent).where(AuthorEvent.year >= from_year, AuthorEvent.year <= to_year)
     )).scalars().all()
     for e in aevents:
         events.append(TimelineEvent(
             year=e.year, type="life",
-            label=e.event_zh, author_id=e.author_id, event_id=e.id,
+            label=e.event_zh,
+            author_id=e.author_id,
+            author_name_zh=author_name.get(e.author_id),
+            event_id=e.id,
         ))
 
     # 世界大事

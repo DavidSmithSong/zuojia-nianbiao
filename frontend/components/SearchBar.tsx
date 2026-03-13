@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { fetchAuthors, type ApiAuthor } from "../lib/api";
 
 interface Props {
@@ -8,18 +9,18 @@ interface Props {
 }
 
 export default function SearchBar({ onSelect }: Props) {
-  const [query, setQuery]       = useState("");
-  const [results, setResults]   = useState<ApiAuthor[]>([]);
+  const router = useRouter();
+
+  const [query, setQuery]           = useState("");
+  const [results, setResults]       = useState<ApiAuthor[]>([]);
   const [allAuthors, setAllAuthors] = useState<ApiAuthor[]>([]);
-  const [open, setOpen]         = useState(false);
+  const [open, setOpen]             = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  // 初始加载全部作家（用于本地模糊匹配）
   useEffect(() => {
     fetchAuthors().then(setAllAuthors).catch(() => {});
   }, []);
 
-  // 关闭下拉
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) {
@@ -30,14 +31,9 @@ export default function SearchBar({ onSelect }: Props) {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  // 本地过滤
   useEffect(() => {
     const q = query.trim().toLowerCase();
-    if (!q) {
-      setResults([]);
-      setOpen(false);
-      return;
-    }
+    if (!q) { setResults([]); setOpen(false); return; }
     const matched = allAuthors.filter(
       a =>
         a.name_zh.toLowerCase().includes(q) ||
@@ -48,6 +44,13 @@ export default function SearchBar({ onSelect }: Props) {
     setResults(matched.slice(0, 8));
     setOpen(matched.length > 0);
   }, [query, allAuthors]);
+
+  function handleSelect(a: ApiAuthor) {
+    setQuery(a.name_zh);
+    setOpen(false);
+    onSelect?.(a);
+    router.push(`/authors/${a.id}`);
+  }
 
   return (
     <div ref={ref} className="relative w-full max-w-sm">
@@ -75,11 +78,7 @@ export default function SearchBar({ onSelect }: Props) {
             <li key={a.id}>
               <button
                 className="w-full text-left px-4 py-2 hover:bg-gray-800 transition-colors flex items-center gap-3"
-                onClick={() => {
-                  setQuery(a.name_zh);
-                  setOpen(false);
-                  onSelect?.(a);
-                }}
+                onClick={() => handleSelect(a)}
               >
                 <span className="w-7 h-7 rounded-full bg-blue-700 flex items-center justify-center text-white text-xs font-bold shrink-0">
                   {a.name_zh[0]}
