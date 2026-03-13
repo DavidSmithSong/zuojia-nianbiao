@@ -8,8 +8,8 @@ from sqlalchemy import (
     Integer, SmallInteger, Text, Numeric, ARRAY,
     ForeignKey, UniqueConstraint, CheckConstraint, func,
 )
+from sqlalchemy import DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.dialects.postgresql import TIMESTAMPTZ
 
 from .database import Base
 
@@ -27,8 +27,8 @@ class Author(Base):
     portrait_url:  Mapped[Optional[str]] = mapped_column(Text)
     wikipedia_url: Mapped[Optional[str]] = mapped_column(Text)
     tags:          Mapped[List[str]]     = mapped_column(ARRAY(Text), server_default="{}")
-    created_at:    Mapped[datetime]      = mapped_column(TIMESTAMPTZ, server_default=func.now())
-    updated_at:    Mapped[datetime]      = mapped_column(TIMESTAMPTZ, server_default=func.now())
+    created_at:    Mapped[datetime]      = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at:    Mapped[datetime]      = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     works:         Mapped[List["Work"]]        = relationship(back_populates="author", cascade="all, delete")
     events:        Mapped[List["AuthorEvent"]] = relationship(back_populates="author", cascade="all, delete")
@@ -47,7 +47,7 @@ class Work(Base):
     language:       Mapped[Optional[str]] = mapped_column(Text)
     description_zh: Mapped[Optional[str]] = mapped_column(Text)
     cover_url:      Mapped[Optional[str]] = mapped_column(Text)
-    created_at:     Mapped[datetime]      = mapped_column(TIMESTAMPTZ, server_default=func.now())
+    created_at:     Mapped[datetime]      = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     author: Mapped["Author"] = relationship(back_populates="works")
 
@@ -65,7 +65,7 @@ class WorldEvent(Base):
     region:       Mapped[Optional[str]] = mapped_column(Text)
     significance: Mapped[int]           = mapped_column(SmallInteger, server_default="3")
     source_url:   Mapped[Optional[str]] = mapped_column(Text)
-    created_at:   Mapped[datetime]      = mapped_column(TIMESTAMPTZ, server_default=func.now())
+    created_at:   Mapped[datetime]      = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
 class AuthorEvent(Base):
@@ -79,7 +79,7 @@ class AuthorEvent(Base):
     event_en:   Mapped[Optional[str]] = mapped_column(Text)
     event_type: Mapped[str]           = mapped_column(Text, server_default="life")
     source:     Mapped[Optional[str]] = mapped_column(Text)
-    created_at: Mapped[datetime]      = mapped_column(TIMESTAMPTZ, server_default=func.now())
+    created_at: Mapped[datetime]      = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     author: Mapped["Author"] = relationship(back_populates="events")
 
@@ -96,7 +96,7 @@ class AuthorWorldEventLink(Base):
     relation_type:  Mapped[str]           = mapped_column(Text, server_default="influence")
     confidence:     Mapped[float]         = mapped_column(Numeric(3, 2), server_default="0.80")
     ai_model:       Mapped[Optional[str]] = mapped_column(Text)
-    created_at:     Mapped[datetime]      = mapped_column(TIMESTAMPTZ, server_default=func.now())
+    created_at:     Mapped[datetime]      = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     annotation: Mapped[Optional["AiAnnotation"]] = relationship(back_populates="link", cascade="all, delete")
 
@@ -111,6 +111,6 @@ class AiAnnotation(Base):
     prompt_used:    Mapped[Optional[str]] = mapped_column(Text)
     model:          Mapped[str]           = mapped_column(Text, nullable=False)
     tokens_used:    Mapped[Optional[int]] = mapped_column(Integer)
-    created_at:     Mapped[datetime]      = mapped_column(TIMESTAMPTZ, server_default=func.now())
+    created_at:     Mapped[datetime]      = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     link: Mapped["AuthorWorldEventLink"] = relationship(back_populates="annotation")

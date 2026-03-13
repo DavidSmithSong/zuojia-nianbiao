@@ -11,7 +11,7 @@ import json
 import os
 import sys
 
-AUTHORS: list[dict] = [
+AUTHORS = [
 
     # ---- 中国作家 ----
 
@@ -584,7 +584,7 @@ def export_json(filepath: str = "authors_seed.json") -> None:
     print(f"[OK] JSON 已导出至：{filepath}")
 
 
-def seed_database(database_url: str | None = None) -> None:
+def seed_database(database_url=None) -> None:
     """
     将作家数据写入 PostgreSQL 数据库。
     依赖：psycopg2-binary  （pip install psycopg2-binary）
