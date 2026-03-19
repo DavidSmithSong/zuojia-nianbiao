@@ -1,16 +1,17 @@
 """
-AI 关联引擎：调用 Claude API 生成作家-事件深层关联
+AI 关联引擎：调用 Gemini API 生成作家-事件深层关联
 """
 import os
-import anthropic
+import google.generativeai as genai
 
 _client = None
 
 
-def _get_client() -> anthropic.AsyncAnthropic:
+def _get_client():
     global _client
     if _client is None:
-        _client = anthropic.AsyncAnthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+        genai.configure(api_key=os.environ["GEMINI_API_KEY"])
+        _client = genai.GenerativeModel("gemini-2.0-flash")
     return _client
 
 
@@ -53,13 +54,8 @@ async def generate_link(author, event, relation_type: str) -> dict:
     )
 
     client = _get_client()
-    message = await client.messages.create(
-        model="claude-opus-4-6",
-        max_tokens=600,
-        messages=[{"role": "user", "content": prompt}],
-    )
-
-    full_text: str = message.content[0].text
+    response = await client.generate_content_async(prompt)
+    full_text: str = response.text
     lines = full_text.strip().splitlines()
 
     # 提取置信度
@@ -81,7 +77,7 @@ async def generate_link(author, event, relation_type: str) -> dict:
         "summary":    summary,
         "annotation": annotation,
         "confidence": confidence,
-        "model":      "claude-opus-4-6",
+        "model":      "gemini-2.0-flash",
         "prompt":     prompt,
-        "tokens":     message.usage.input_tokens + message.usage.output_tokens,
+        "tokens":     0,
     }
