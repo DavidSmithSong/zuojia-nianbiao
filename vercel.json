@@ -4,6 +4,6 @@
   "installCommand": "cd frontend && npm install",
   "framework": "nextjs",
   "env": {
-    "BACKEND_URL": "@backend_url"
+    "NEXT_PUBLIC_API_URL": "https://zuojia-nianbiao.onrender.com"
   }
 }
