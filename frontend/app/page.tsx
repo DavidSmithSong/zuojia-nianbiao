@@ -11,8 +11,16 @@ import { fetchAuthors, type ApiAuthor } from "@/lib/api";
 const NAT_FILTERS = [
   { label: "全部", value: "" },
   { label: "中国", value: "中国" },
+  { label: "日本", value: "日本" },
   { label: "西方", value: "西方" },
 ];
+
+const WESTERN_NATIONALITIES = new Set([
+  "法国","英国","美国","俄国","德国","奥地利","爱尔兰",
+  "挪威","意大利","西班牙","瑞典","丹麦","荷兰","比利时",
+  "瑞士","希腊","阿根廷","哥伦比亚","智利","秘鲁","墨西哥",
+  "巴西","印度","波兰","捷克","匈牙利","罗马尼亚","葡萄牙",
+]);
 
 export default function Home() {
   const router  = useRouter();
@@ -24,9 +32,11 @@ export default function Home() {
     fetchAuthors().then(setAuthors).catch(() => {});
   }, []);
 
-  const displayAuthors = natFilter
-    ? authors.filter(a => a.nationality.includes(natFilter))
-    : authors;
+  const displayAuthors = natFilter === "西方"
+    ? authors.filter(a => WESTERN_NATIONALITIES.has(a.nationality))
+    : natFilter
+      ? authors.filter(a => a.nationality.includes(natFilter))
+      : authors;
 
   return (
     <div className="min-h-screen flex flex-col t-bg t-text">
@@ -109,9 +119,9 @@ export default function Home() {
                     onMouseEnter={e => (e.currentTarget.style.background = "var(--surface2)")}
                     onMouseLeave={e => (e.currentTarget.style.background = "")}
                   >
-                    {PORTRAITS[a.name_zh] ? (
+                    {(PORTRAITS[a.name_zh] || a.portrait_url) ? (
                       <img
-                        src={PORTRAITS[a.name_zh]}
+                        src={PORTRAITS[a.name_zh] || a.portrait_url!}
                         alt={a.name_zh}
                         className="w-7 h-7 rounded-full object-cover shrink-0"
                       />

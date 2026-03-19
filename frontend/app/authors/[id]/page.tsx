@@ -72,7 +72,7 @@ export default function AuthorDetailPage() {
     );
   }
 
-  const portraitUrl = PORTRAITS[author.name_zh];
+  const portraitUrl = PORTRAITS[author.name_zh] || author.portrait_url;
 
   return (
     <div className="min-h-screen t-bg t-text">
