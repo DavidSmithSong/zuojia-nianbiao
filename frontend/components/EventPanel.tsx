@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import AuthorCard from "./AuthorCard";
+import { PORTRAITS } from "./portraits";
 import { generateAiLink, fetchAuthors, type ApiAuthor, type ApiTimelineEvent } from "../lib/api";
 
 interface Props {
@@ -63,28 +64,46 @@ export default function EventPanel({ event, onClose }: Props) {
     event.event_id != null &&
     (event.type === "world" ? selectedAuthorId > 0 : (event.author_id ?? 0) > 0);
 
+  const portraitUrl = event.author_name_zh ? PORTRAITS[event.author_name_zh] : undefined;
+
   return (
-    <div className="fixed bottom-0 right-0 w-full md:w-96 bg-gray-900 border-t md:border-l border-gray-700 shadow-2xl p-5 z-50 max-h-[80vh] overflow-y-auto">
+    <div
+      className="fixed bottom-0 right-0 w-full md:w-96 shadow-2xl p-5 z-50 max-h-[80vh] overflow-y-auto"
+      style={{
+        background:   "var(--surface)",
+        borderTop:    "1px solid var(--border)",
+        borderLeft:   "1px solid var(--border)",
+        color:        "var(--text)",
+      }}
+    >
       {/* 标题行 */}
       <div className="flex justify-between items-start mb-3">
         <div>
-          <span className="text-xs bg-gray-700 text-gray-300 px-2 py-0.5 rounded mr-2">
+          <span
+            className="text-xs px-2 py-0.5 rounded mr-2"
+            style={{ background: "var(--surface2)", color: "var(--text-m)" }}
+          >
             {TYPE_LABEL[event.type] ?? event.type}
           </span>
-          <span className="text-xs text-gray-500">{event.year} 年</span>
+          <span className="text-xs" style={{ color: "var(--text-m)" }}>{event.year} 年</span>
         </div>
         <button
           onClick={onClose}
-          className="text-gray-500 hover:text-gray-200 text-lg leading-none"
+          className="text-lg leading-none"
+          style={{ color: "var(--text-m)" }}
         >×</button>
       </div>
 
-      <h3 className="text-base font-semibold text-gray-100 mb-3">{event.label}</h3>
+      <h3 className="text-base font-semibold mb-3" style={{ color: "var(--text)" }}>{event.label}</h3>
 
       {/* 作家卡片（非世界大事） */}
       {event.author_id && event.author_name_zh && event.type !== "world" && (
         <div className="mb-4">
-          <AuthorCard authorId={event.author_id} authorName={event.author_name_zh} />
+          <AuthorCard
+            authorId={event.author_id}
+            authorName={event.author_name_zh}
+            portraitUrl={portraitUrl}
+          />
         </div>
       )}
 
@@ -93,11 +112,16 @@ export default function EventPanel({ event, onClose }: Props) {
         <div className="space-y-3">
           {/* 选择作家 */}
           <div>
-            <label className="text-xs text-gray-400 block mb-1">选择作家</label>
+            <label className="text-xs block mb-1" style={{ color: "var(--text-m)" }}>选择作家</label>
             <select
               value={selectedAuthorId}
               onChange={e => setSelectedAuthorId(Number(e.target.value))}
-              className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-gray-100"
+              className="w-full rounded px-2 py-1.5 text-sm"
+              style={{
+                background:   "var(--surface2)",
+                border:       "1px solid var(--border)",
+                color:        "var(--text)",
+              }}
             >
               <option value={0}>— 请选择作家 —</option>
               {authors.map(a => (
@@ -110,17 +134,17 @@ export default function EventPanel({ event, onClose }: Props) {
 
           {/* 选择关联类型 */}
           <div>
-            <label className="text-xs text-gray-400 block mb-1">关联类型</label>
+            <label className="text-xs block mb-1" style={{ color: "var(--text-m)" }}>关联类型</label>
             <div className="flex gap-2 flex-wrap">
               {RELATION_OPTIONS.map(opt => (
                 <button
                   key={opt.value}
                   onClick={() => setRelationType(opt.value)}
-                  className={`text-xs px-3 py-1 rounded-full border transition-colors ${
-                    relationType === opt.value
-                      ? "bg-blue-700 border-blue-600 text-white"
-                      : "bg-gray-800 border-gray-700 text-gray-400 hover:border-gray-500"
-                  }`}
+                  className="text-xs px-3 py-1 rounded-full border transition-colors"
+                  style={relationType === opt.value
+                    ? { background: "#1d4ed8", borderColor: "#1d4ed8", color: "#fff" }
+                    : { background: "var(--surface2)", borderColor: "var(--border)", color: "var(--text-m)" }
+                  }
                 >
                   {opt.label}
                 </button>
@@ -131,7 +155,12 @@ export default function EventPanel({ event, onClose }: Props) {
           <button
             onClick={handleGenerateLink}
             disabled={loading || !canGenerateAi}
-            className="w-full text-sm bg-blue-700 hover:bg-blue-600 disabled:bg-gray-700 disabled:cursor-not-allowed text-white rounded-lg px-4 py-2 transition-colors"
+            className="w-full text-sm rounded-lg px-4 py-2 transition-colors"
+            style={{
+              background: loading || !canGenerateAi ? "var(--surface2)" : "#1d4ed8",
+              color:      loading || !canGenerateAi ? "var(--text-m)"  : "#fff",
+              cursor:     loading || !canGenerateAi ? "not-allowed"    : "pointer",
+            }}
           >
             {loading ? "AI 生成中…" : "✦ 生成 AI 关联阐释"}
           </button>
@@ -140,7 +169,8 @@ export default function EventPanel({ event, onClose }: Props) {
 
       {/* AI 阐释文本 */}
       {aiText && (
-        <div className="mt-3 bg-gray-800 rounded-lg p-3 text-sm text-gray-300 leading-relaxed">
+        <div className="mt-3 rounded-lg p-3 text-sm leading-relaxed"
+          style={{ background: "var(--surface2)", color: "var(--text)" }}>
           {aiText}
         </div>
       )}

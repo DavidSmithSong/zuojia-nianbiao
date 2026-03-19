@@ -3,6 +3,11 @@ import type { NextConfig } from "next";
 const BACKEND = process.env.BACKEND_URL ?? "http://localhost:8000";
 
 const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      { protocol: "https", hostname: "upload.wikimedia.org" },
+    ],
+  },
   async rewrites() {
     return [
       {

@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: zuojia-nianbiao-api
+    runtime: python
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DATABASE_URL
+        sync: false          # 在 Render Dashboard 手动填入 Neon 连接串
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: PYTHON_VERSION
+        value: 3.12.0
+    healthCheckPath: /
+    autoDeploy: true
