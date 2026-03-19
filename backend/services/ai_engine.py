@@ -2,7 +2,7 @@
 AI 关联引擎：调用 Gemini API 生成作家-事件深层关联
 """
 import os
-import google.generativeai as genai
+from google import genai
 
 _client = None
 
@@ -10,8 +10,7 @@ _client = None
 def _get_client():
     global _client
     if _client is None:
-        genai.configure(api_key=os.environ["GEMINI_API_KEY"])
-        _client = genai.GenerativeModel("gemini-2.0-flash")
+        _client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
     return _client
 
 
@@ -54,7 +53,9 @@ async def generate_link(author, event, relation_type: str) -> dict:
     )
 
     client = _get_client()
-    response = await client.generate_content_async(prompt)
+    response = await client.aio.models.generate_content(
+        model="gemini-2.0-flash", contents=prompt
+    )
     full_text: str = response.text
     lines = full_text.strip().splitlines()
 
