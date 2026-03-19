@@ -12,8 +12,11 @@ from .routers import authors, works, events, timeline, ai_links
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    try:
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+    except Exception as e:
+        print(f"[WARNING] 数据库连接失败，服务仍将启动: {e}")
     yield
 
 
