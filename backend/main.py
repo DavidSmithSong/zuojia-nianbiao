@@ -29,14 +29,14 @@ app = FastAPI(
 
 ALLOWED_ORIGINS = [
     "http://localhost:3000",
-    "https://*.vercel.app",
     "https://zuojia-nianbiao.vercel.app",
+    "https://zuojia-nianbiao.pages.dev",
 ]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
-    allow_origin_regex=r"https://zuojia-nianbiao.*\.vercel\.app",
+    allow_origin_regex=r"https://zuojia-nianbiao.*\.(vercel\.app|pages\.dev)",
     allow_methods=["*"],
     allow_headers=["*"],
 )
