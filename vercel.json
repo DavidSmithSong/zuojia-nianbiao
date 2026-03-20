@@ -1,8 +1,4 @@
 {
-  "rootDirectory": "frontend",
-  "buildCommand": "npm run build",
-  "outputDirectory": ".next",
-  "framework": "nextjs",
   "env": {
     "BACKEND_URL": "https://zuojia-nianbiao.onrender.com"
   }
