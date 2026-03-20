@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://zuojia-nianbiao.onrender.com/api/:path*"
+    }
+  ]
+}
